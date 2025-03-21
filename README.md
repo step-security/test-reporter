@@ -351,10 +351,3 @@ Unfortunately, there are some known issues and limitations caused by GitHub API:
 - Check Runs are created for specific commit SHA. It's not possible to specify under which workflow test report should belong if more
   workflows are running for the same SHA. Thanks to this GitHub "feature" it's possible your test report will appear in an unexpected place in GitHub UI.
   For more information, see [#67](https://github.com/step-security/test-reporter/issues/67).
-
-## See also
-- [paths-filter](https://github.com/dorny/paths-filter) - Conditionally run actions based on files modified by PR, feature branch, or pushed commits
-
-## License
-
-The scripts and documentation in this project are released under the [MIT License](https://github.com/step-security/test-reporter/blob/main/LICENSE)

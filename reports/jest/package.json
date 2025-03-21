@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest --ci --reporters=default --reporters=jest-junit"
   },
-  "author": "Michal Dorner <dorner.michal@gmail.com>",
+  "author": "step-security",
   "license": "MIT",
   "devDependencies": {
     "jest": "^26.5.3",

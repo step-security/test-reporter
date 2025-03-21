@@ -48,7 +48,7 @@ describe('jest-junit tests', () => {
     const opts: ParseOptions = {
       parseErrors: true,
       trackedFiles: ['__tests__/main.test.js', '__tests__/second.test.js', 'lib/main.js']
-      //workDir: 'C:/Users/Michal/Workspace/dorny/test-check/reports/jest/'
+      //workDir: 'C:/Users/Michal/Workspace/step-security/test-check/reports/jest/'
     }
 
     const parser = new JestJunitParser(opts)
@@ -71,7 +71,7 @@ describe('jest-junit tests', () => {
     const opts: ParseOptions = {
       parseErrors: true,
       trackedFiles
-      //workDir: '/home/dorny/dorny/jest/'
+      //workDir: '/home/step-security/step-security/jest/'
     }
 
     const parser = new JestJunitParser(opts)
@@ -94,7 +94,7 @@ describe('jest-junit tests', () => {
     const opts: ParseOptions = {
       parseErrors: true,
       trackedFiles
-      //workDir: '/home/dorny/dorny/jest/'
+      //workDir: '/home/step-security/step-security/jest/'
     }
 
     const parser = new JestJunitParser(opts)

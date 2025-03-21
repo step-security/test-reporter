@@ -32,7 +32,7 @@ describe('dotnet-trx tests', () => {
     const opts: ParseOptions = {
       parseErrors: true,
       trackedFiles: ['DotnetTests.Unit/Calculator.cs', 'DotnetTests.XUnitTests/CalculatorTests.cs']
-      //workDir: 'C:/Users/Michal/Workspace/dorny/test-check/reports/dotnet/'
+      //workDir: 'C:/Users/Michal/Workspace/step-security/test-check/reports/dotnet/'
     }
 
     const parser = new DotnetTrxParser(opts)

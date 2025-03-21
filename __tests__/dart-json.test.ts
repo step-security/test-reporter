@@ -27,7 +27,7 @@ describe('dart-json tests', () => {
     const opts: ParseOptions = {
       parseErrors: true,
       trackedFiles: ['lib/main.dart', 'test/main_test.dart', 'test/second_test.dart']
-      //workDir: 'C:/Users/Michal/Workspace/dorny/test-check/reports/dart/'
+      //workDir: 'C:/Users/Michal/Workspace/step-security/test-check/reports/dart/'
     }
 
     const fixturePath = path.join(__dirname, 'fixtures', 'dart-json.json')

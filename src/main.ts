@@ -260,9 +260,7 @@ async function validateSubscription(): Promise<void> {
     await axios.get(API_URL, {timeout: 3000})
   } catch (error) {
     if (isAxiosError(error) && error.response) {
-      core.error(
-        'Subscription is not valid. Reach out to support@stepsecurity.io'
-      )
+      core.error('Subscription is not valid. Reach out to support@stepsecurity.io')
       process.exit(1)
     } else {
       core.info('Timeout or API not reachable. Continuing to next step.')

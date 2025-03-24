@@ -10,6 +10,11 @@ on:
         description: 'Specify a base branch'
         required: false
         default: 'main'
+      script:
+        description: 'Script to run after audit fix'
+        required: false
+        default: 'npm run all'
+  
   schedule:
     - cron: '0 0 * * 1'
 
@@ -19,6 +24,7 @@ jobs:
     with:
       force: ${{ inputs.force || false }}
       base_branch: ${{ inputs.base_branch || 'main' }}
+      script: ${{ inputs.script || 'npm run all' }}
 
 permissions:
   contents: write

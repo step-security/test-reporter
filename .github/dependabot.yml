@@ -8,3 +8,28 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+
+  - package-ecosystem: nuget
+    directory: /reports/dotnet/DotnetTests.NUnitV3Tests
+    schedule:
+      interval: daily
+
+  - package-ecosystem: nuget
+    directory: /reports/dotnet/DotnetTests.Unit
+    schedule:
+      interval: daily
+
+  - package-ecosystem: nuget
+    directory: /reports/dotnet/DotnetTests.XUnitTests
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /reports/jest
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /reports/mocha
+    schedule:
+      interval: daily

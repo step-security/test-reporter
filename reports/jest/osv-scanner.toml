@@ -1,0 +1,58 @@
+# They are not part of the build process, dependencies used for testing"
+
+[[IgnoredVulns]]
+id = "GHSA-968p-4wvh-cqc8" 
+
+[[IgnoredVulns]]
+id = "GHSA-grv7-fg5c-xmjg"
+
+[[IgnoredVulns]]
+id = "GHSA-3xgq-45jj-v275"
+
+[[IgnoredVulns]]
+id = "GHSA-gxpj-cx7g-858c"
+
+[[IgnoredVulns]]
+id = "GHSA-43f8-2h32-f4cj"
+
+[[IgnoredVulns]]
+id = "GHSA-896r-f27r-55mw"
+
+[[IgnoredVulns]]
+id = "GHSA-29mw-wpgm-hmr9"
+
+[[IgnoredVulns]]
+id = "GHSA-35jh-r3h4-6jhm"
+
+[[IgnoredVulns]]
+id = "GHSA-952p-6rrq-rcjv"
+
+[[IgnoredVulns]]
+id = "GHSA-f8q6-p94x-37v3"
+
+[[IgnoredVulns]]
+id = "GHSA-hj48-42vr-x3v9"
+
+[[IgnoredVulns]]
+id = "GHSA-p8p7-x288-28g6"
+
+[[IgnoredVulns]]
+id = "GHSA-c2qf-rxjj-qqgw"
+
+[[IgnoredVulns]]
+id = "GHSA-jgrx-mgxx-jf9v"
+
+[[IgnoredVulns]]
+id = "GHSA-72xf-g2v4-qvf3"
+
+[[IgnoredVulns]]
+id = "GHSA-j8xg-fqg3-53r7"
+
+[[IgnoredVulns]]
+id = "HSA-3h5v-q93c-6h6q"
+
+[[IgnoredVulns]]
+id = "GHSA-c4w7-xm78-47vh"
+
+[[IgnoredVulns]]
+id = "GHSA-3h5v-q93c-6h6q"

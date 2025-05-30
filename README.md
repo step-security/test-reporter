@@ -16,6 +16,7 @@ This [Github Action](https://github.com/features/actions) displays test results 
 - .NET / [dotnet test](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-test#examples) ( [xUnit](https://xunit.net/) / [NUnit](https://nunit.org/) / [MSTest](https://github.com/Microsoft/testfx-docs) )
 - Dart / [test](https://pub.dev/packages/test)
 - Flutter / [test](https://pub.dev/packages/test)
+- Go / [go test](https://pkg.go.dev/testing)
 - Java / [JUnit](https://junit.org/)
 - JavaScript / [JEST](https://jestjs.io/) / [Mocha](https://mochajs.org/)
 - Swift / xUnit
@@ -140,6 +141,7 @@ jobs:
     #   dotnet-nunit
     #   dotnet-trx
     #   flutter-json
+    #   golang-json
     #   java-junit
     #   jest-junit
     #   mocha-json
@@ -154,6 +156,11 @@ jobs:
     # Allows you to generate reports for Actions Summary
     # https://github.blog/2022-05-09-supercharging-github-actions-with-job-summaries/
     use-actions-summary: 'true'
+    
+    # Optionally specify a title (Heading level 1) for the report. Leading and trailing whitespace are ignored.
+    # This is useful for separating your test report from other sections in the build summary.
+    # If omitted or set to whitespace/empty, no title will be printed.
+    report-title: ''
 
     # Customize the title of badges shown for each Actions Summary.
     # Useful when distinguish summaries for tests ran in multiple Actions steps.
@@ -274,6 +281,13 @@ For more information see:
 </details>
 
 <details>
+  <summary>golang-json</summary>
+
+You must use the `-json` flag and output the results to a file (ex: `go test -json > testresults.json`)
+
+</details>
+
+<details>
   <summary>java-junit (Experimental)</summary>
 
 Support for [JUnit](https://Junit.org/) XML is experimental - should work but it was not extensively tested.
@@ -345,7 +359,7 @@ Support for Swift test results in xUnit format is experimental - should work but
 
 Unfortunately, there are some known issues and limitations caused by GitHub API:
 
-- Test report (i.e. Check Run summary) is markdown text. No custom styling or HTML is possible.
+- Test report (i.e. build summary) is Markdown text. No custom styling or HTML is possible.
 - Maximum report size is 65535 bytes. Input parameters `list-suites` and `list-tests` will be automatically adjusted if max size is exceeded.
 - Test report can't reference any additional files (e.g. screenshots). You can use `actions/upload-artifact@v4` to upload them and inspect them manually.
 - Check Runs are created for specific commit SHA. It's not possible to specify under which workflow test report should belong if more

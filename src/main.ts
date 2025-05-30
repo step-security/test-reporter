@@ -49,6 +49,7 @@ class TestReporter {
   readonly onlySummary = core.getInput('only-summary', {required: false}) === 'true'
   readonly useActionsSummary = core.getInput('use-actions-summary', {required: false}) === 'true'
   readonly badgeTitle = core.getInput('badge-title', {required: false})
+  readonly reportTitle = core.getInput('report-title', {required: false})
   readonly token = core.getInput('token', {required: true})
   readonly octokit: InstanceType<typeof GitHub>
   readonly context = getCheckRunContext()
@@ -166,11 +167,19 @@ class TestReporter {
       }
     }
 
-    const {listSuites, listTests, onlySummary, useActionsSummary, badgeTitle} = this
+    const {listSuites, listTests, onlySummary, useActionsSummary, badgeTitle, reportTitle} = this
 
     let baseUrl = ''
     if (this.useActionsSummary) {
-      const summary = getReport(results, {listSuites, listTests, baseUrl, onlySummary, useActionsSummary, badgeTitle})
+      const summary = getReport(results, {
+        listSuites,
+        listTests,
+        baseUrl,
+        onlySummary,
+        useActionsSummary,
+        badgeTitle,
+        reportTitle
+      })
 
       core.info('Summary content:')
       core.info(summary)
@@ -190,7 +199,15 @@ class TestReporter {
 
       core.info('Creating report summary')
       baseUrl = createResp.data.html_url as string
-      const summary = getReport(results, {listSuites, listTests, baseUrl, onlySummary, useActionsSummary, badgeTitle})
+      const summary = getReport(results, {
+        listSuites,
+        listTests,
+        baseUrl,
+        onlySummary,
+        useActionsSummary,
+        badgeTitle,
+        reportTitle
+      })
 
       core.info('Creating annotations')
       const annotations = getAnnotations(results, this.maxAnnotations)

@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   audit-fix:
-    uses: step-security/reusable-workflows/.github/workflows/auto_cherry_pick.yaml@upstream-Changes-CherryPick
+    uses: step-security/reusable-workflows/.github/workflows/auto_cherry_pick.yaml@v1
     with:
       original-owner: "dorny"
       repo-name: "test-reporter"

@@ -273,6 +273,7 @@ const get_report_1 = __nccwpck_require__(7070);
 const dart_json_parser_1 = __nccwpck_require__(1254);
 const dotnet_nunit_parser_1 = __nccwpck_require__(6394);
 const dotnet_trx_parser_1 = __nccwpck_require__(1658);
+const golang_json_parser_1 = __nccwpck_require__(5162);
 const java_junit_parser_1 = __nccwpck_require__(8342);
 const jest_junit_parser_1 = __nccwpck_require__(1042);
 const mocha_json_parser_1 = __nccwpck_require__(5402);
@@ -309,6 +310,7 @@ class TestReporter {
     onlySummary = core.getInput('only-summary', { required: false }) === 'true';
     useActionsSummary = core.getInput('use-actions-summary', { required: false }) === 'true';
     badgeTitle = core.getInput('badge-title', { required: false });
+    reportTitle = core.getInput('report-title', { required: false });
     token = core.getInput('token', { required: true });
     octokit;
     context = (0, github_utils_1.getCheckRunContext)();
@@ -401,10 +403,18 @@ class TestReporter {
                 throw error;
             }
         }
-        const { listSuites, listTests, onlySummary, useActionsSummary, badgeTitle } = this;
+        const { listSuites, listTests, onlySummary, useActionsSummary, badgeTitle, reportTitle } = this;
         let baseUrl = '';
         if (this.useActionsSummary) {
-            const summary = (0, get_report_1.getReport)(results, { listSuites, listTests, baseUrl, onlySummary, useActionsSummary, badgeTitle });
+            const summary = (0, get_report_1.getReport)(results, {
+                listSuites,
+                listTests,
+                baseUrl,
+                onlySummary,
+                useActionsSummary,
+                badgeTitle,
+                reportTitle
+            });
             core.info('Summary content:');
             core.info(summary);
             await core.summary.addRaw(summary).write();
@@ -423,7 +433,15 @@ class TestReporter {
             });
             core.info('Creating report summary');
             baseUrl = createResp.data.html_url;
-            const summary = (0, get_report_1.getReport)(results, { listSuites, listTests, baseUrl, onlySummary, useActionsSummary, badgeTitle });
+            const summary = (0, get_report_1.getReport)(results, {
+                listSuites,
+                listTests,
+                baseUrl,
+                onlySummary,
+                useActionsSummary,
+                badgeTitle,
+                reportTitle
+            });
             core.info('Creating annotations');
             const annotations = (0, get_annotations_1.getAnnotations)(results, this.maxAnnotations);
             const isFailed = this.failOnError && results.some(tr => tr.result === 'failed');
@@ -460,6 +478,8 @@ class TestReporter {
                 return new dotnet_nunit_parser_1.DotnetNunitParser(options);
             case 'dotnet-trx':
                 return new dotnet_trx_parser_1.DotnetTrxParser(options);
+            case 'golang-json':
+                return new golang_json_parser_1.GolangJsonParser(options);
             case 'flutter-json':
                 return new dart_json_parser_1.DartJsonParser(options, 'flutter');
             case 'java-junit':
@@ -954,7 +974,8 @@ class DotnetTrxParser {
         }
     }
     getTestClasses(trx) {
-        if (trx.TestRun.TestDefinitions === undefined || trx.TestRun.Results === undefined) {
+        if (trx.TestRun.TestDefinitions === undefined || trx.TestRun.Results === undefined ||
+            !trx.TestRun.TestDefinitions.some(td => td.UnitTest && Array.isArray(td.UnitTest))) {
             return [];
         }
         const unitTests = {};
@@ -1063,6 +1084,106 @@ class DotnetTrxParser {
     }
 }
 exports.DotnetTrxParser = DotnetTrxParser;
+
+
+/***/ }),
+
+/***/ 5162:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.GolangJsonParser = void 0;
+const test_results_1 = __nccwpck_require__(613);
+class GolangJsonParser {
+    options;
+    assumedWorkDir;
+    constructor(options) {
+        this.options = options;
+    }
+    async parse(path, content) {
+        const events = await this.getGolangTestEvents(path, content);
+        return this.getTestRunResult(path, events);
+    }
+    async getGolangTestEvents(path, content) {
+        return content.trim().split('\n').map((line, index) => {
+            try {
+                return JSON.parse(line);
+            }
+            catch (e) {
+                throw new Error(`Invalid JSON at ${path} line ${index + 1}\n\n${e}`);
+            }
+        });
+    }
+    getTestRunResult(path, events) {
+        const eventGroups = new Map();
+        for (const event of events) {
+            if (!event.Test) {
+                continue;
+            }
+            const k = `${event.Package}/${event.Test}`;
+            let g = eventGroups.get(k);
+            if (!g) {
+                g = [];
+                eventGroups.set(k, g);
+            }
+            g.push(event);
+        }
+        const suites = [];
+        for (const eventGroup of eventGroups.values()) {
+            const event = eventGroup[0];
+            let suite = suites.find(s => s.name === event.Package);
+            if (!suite) {
+                suite = new test_results_1.TestSuiteResult(event.Package, []);
+                suites.push(suite);
+            }
+            if (!event.Test) {
+                continue;
+            }
+            let groupName;
+            let rest;
+            [groupName, ...rest] = event.Test.split('/');
+            let testName = rest.join('/');
+            if (!testName) {
+                testName = groupName;
+                groupName = null;
+            }
+            let group = suite.groups.find(g => g.name === groupName);
+            if (!group) {
+                group = new test_results_1.TestGroupResult(groupName, []);
+                suite.groups.push(group);
+            }
+            const lastEvent = eventGroup.at(-1);
+            const result = lastEvent.Action === 'pass' ? 'success'
+                : lastEvent.Action === 'skip' ? 'skipped'
+                    : 'failed';
+            if (lastEvent.Elapsed === undefined) {
+                throw new Error('missing elapsed on final test event');
+            }
+            const time = lastEvent.Elapsed * 1000;
+            let error = undefined;
+            if (result !== 'success') {
+                const outputEvents = eventGroup
+                    .filter(e => e.Action === 'output')
+                    .map(e => e.Output ?? '')
+                    // Go output prepends indentation to help group tests - remove it
+                    .map(o => o.replace(/^    /, ''));
+                // First and last lines will be generic "test started" and "test finished" lines - remove them
+                outputEvents.splice(0, 1);
+                outputEvents.splice(-1, 1);
+                const details = outputEvents.join('');
+                error = {
+                    message: details,
+                    details: details
+                };
+            }
+            group.tests.push(new test_results_1.TestCaseResult(testName, result, time, error));
+        }
+        return new test_results_1.TestRunResult(path, suites);
+    }
+}
+exports.GolangJsonParser = GolangJsonParser;
 
 
 /***/ }),
@@ -1802,6 +1923,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.DEFAULT_OPTIONS = void 0;
 exports.getReport = getReport;
 const core = __importStar(__nccwpck_require__(7484));
 const markdown_utils_1 = __nccwpck_require__(5129);
@@ -1809,16 +1931,17 @@ const node_utils_1 = __nccwpck_require__(5384);
 const parse_utils_1 = __nccwpck_require__(9633);
 const slugger_1 = __nccwpck_require__(9537);
 const MAX_REPORT_LENGTH = 65535;
-const MAX_ACTIONS_SUMMARY_LENGTH = 131072; // 1048576 soon
-const defaultOptions = {
+const MAX_ACTIONS_SUMMARY_LENGTH = 1048576;
+exports.DEFAULT_OPTIONS = {
     listSuites: 'all',
     listTests: 'all',
     baseUrl: '',
     onlySummary: false,
     useActionsSummary: true,
-    badgeTitle: 'tests'
+    badgeTitle: 'tests',
+    reportTitle: ''
 };
-function getReport(results, options = defaultOptions) {
+function getReport(results, options = exports.DEFAULT_OPTIONS) {
     core.info('Generating check run summary');
     applySort(results);
     const opts = { ...options };
@@ -1839,7 +1962,7 @@ function getReport(results, options = defaultOptions) {
     core.warning(`Test report summary exceeded limit of ${getMaxReportLength(options)} bytes and will be trimmed`);
     return trimReport(lines, options);
 }
-function getMaxReportLength(options = defaultOptions) {
+function getMaxReportLength(options = exports.DEFAULT_OPTIONS) {
     return options.useActionsSummary ? MAX_ACTIONS_SUMMARY_LENGTH : MAX_REPORT_LENGTH;
 }
 function trimReport(lines, options) {
@@ -1879,6 +2002,10 @@ function getByteLength(text) {
 }
 function renderReport(results, options) {
     const sections = [];
+    const reportTitle = options.reportTitle.trim();
+    if (reportTitle) {
+        sections.push(`# ${reportTitle}`);
+    }
     const badge = getReportBadge(results, options);
     sections.push(badge);
     const runs = getTestRunsReport(results, options);
@@ -1948,7 +2075,7 @@ function getSuitesReport(tr, runIndex, options) {
     const sections = [];
     const suites = options.listSuites === 'failed' ? tr.failedSuites : tr.suites;
     if (options.listSuites !== 'none') {
-        const trSlug = makeRunSlug(runIndex);
+        const trSlug = makeRunSlug(runIndex, options);
         const nameLink = `<a id="${trSlug.id}" href="${options.baseUrl + trSlug.link}">${tr.path}</a>`;
         const icon = getResultIcon(tr.result);
         sections.push(`## ${icon}\xa0${nameLink}`);
@@ -1962,7 +2089,7 @@ function getSuitesReport(tr, runIndex, options) {
                 const tsTime = (0, markdown_utils_1.formatTime)(s.time);
                 const tsName = s.name;
                 const skipLink = options.listTests === 'none' || (options.listTests === 'failed' && s.result !== 'failed');
-                const tsAddr = options.baseUrl + makeSuiteSlug(runIndex, suiteIndex).link;
+                const tsAddr = options.baseUrl + makeSuiteSlug(runIndex, suiteIndex, options).link;
                 const tsNameLink = skipLink ? tsName : (0, markdown_utils_1.link)(tsName, tsAddr);
                 const passed = s.passed > 0 ? `${s.passed} ${markdown_utils_1.Icon.success}` : '';
                 const failed = s.failed > 0 ? `${s.failed} ${markdown_utils_1.Icon.fail}` : '';
@@ -1990,7 +2117,7 @@ function getTestsReport(ts, runIndex, suiteIndex, options) {
     }
     const sections = [];
     const tsName = ts.name;
-    const tsSlug = makeSuiteSlug(runIndex, suiteIndex);
+    const tsSlug = makeSuiteSlug(runIndex, suiteIndex, options);
     const tsNameLink = `<a id="${tsSlug.id}" href="${options.baseUrl + tsSlug.link}">${tsName}</a>`;
     const icon = getResultIcon(ts.result);
     sections.push(`### ${icon}\xa0${tsNameLink}`);
@@ -2016,13 +2143,13 @@ function getTestsReport(ts, runIndex, suiteIndex, options) {
     sections.push('```');
     return sections;
 }
-function makeRunSlug(runIndex) {
+function makeRunSlug(runIndex, options) {
     // use prefix to avoid slug conflicts after escaping the paths
-    return (0, slugger_1.slug)(`r${runIndex}`);
+    return (0, slugger_1.slug)(`r${runIndex}`, options);
 }
-function makeSuiteSlug(runIndex, suiteIndex) {
+function makeSuiteSlug(runIndex, suiteIndex, options) {
     // use prefix to avoid slug conflicts after escaping the paths
-    return (0, slugger_1.slug)(`r${runIndex}s${suiteIndex}`);
+    return (0, slugger_1.slug)(`r${runIndex}s${suiteIndex}`, options);
 }
 function getResultIcon(result) {
     switch (result) {
@@ -2561,17 +2688,15 @@ function getBasePath(path, trackedFiles) {
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.slug = slug;
-// Returns HTML element id and href link usable as manual anchor links
-// This is needed because Github in check run summary doesn't automatically
-// create links out of headings as it normally does for other markdown content
-function slug(name) {
+function slug(name, options) {
     const slugId = name
         .trim()
         .replace(/_/g, '')
         .replace(/[./\\]/g, '-')
         .replace(/[^\w-]/g, '');
     const id = `user-content-${slugId}`;
-    const link = `#${slugId}`;
+    // When using the Action Summary for display, links must include the "user-content-" prefix.
+    const link = options.useActionsSummary ? `#${id}` : `#${slugId}`;
     return { id, link };
 }
 

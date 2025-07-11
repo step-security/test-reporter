@@ -404,6 +404,10 @@ class TestReporter {
             }
         }
         const { listSuites, listTests, onlySummary, useActionsSummary, badgeTitle, reportTitle } = this;
+        const passed = results.reduce((sum, tr) => sum + tr.passed, 0);
+        const failed = results.reduce((sum, tr) => sum + tr.failed, 0);
+        const skipped = results.reduce((sum, tr) => sum + tr.skipped, 0);
+        const shortSummary = `${passed} passed, ${failed} failed and ${skipped} skipped `;
         let baseUrl = '';
         if (this.useActionsSummary) {
             const summary = (0, get_report_1.getReport)(results, {
@@ -417,6 +421,7 @@ class TestReporter {
             });
             core.info('Summary content:');
             core.info(summary);
+            core.summary.addRaw(`# ${shortSummary}`);
             await core.summary.addRaw(summary).write();
         }
         else {
@@ -446,10 +451,6 @@ class TestReporter {
             const annotations = (0, get_annotations_1.getAnnotations)(results, this.maxAnnotations);
             const isFailed = this.failOnError && results.some(tr => tr.result === 'failed');
             const conclusion = isFailed ? 'failure' : 'success';
-            const passed = results.reduce((sum, tr) => sum + tr.passed, 0);
-            const failed = results.reduce((sum, tr) => sum + tr.failed, 0);
-            const skipped = results.reduce((sum, tr) => sum + tr.skipped, 0);
-            const shortSummary = `${passed} passed, ${failed} failed and ${skipped} skipped `;
             core.info(`Updating check run conclusion (${conclusion}) and output`);
             const resp = await this.octokit.rest.checks.update({
                 check_run_id: createResp.data.id,
@@ -990,7 +991,7 @@ class DotnetTrxParser {
         }));
         const testClasses = {};
         for (const r of unitTestsResults) {
-            const className = r.test.TestMethod[0].$.className;
+            const className = r.test.TestMethod[0].$.className ?? "Unclassified";
             let tc = testClasses[className];
             if (tc === undefined) {
                 tc = new TestClass(className);
@@ -1041,8 +1042,8 @@ class DotnetTrxParser {
             error.StackTrace.length === 0) {
             return undefined;
         }
-        const message = test.error.Message[0];
         const stackTrace = test.error.StackTrace[0];
+        const message = `${test.error.Message[0]}\n${stackTrace}`;
         let path;
         let line;
         const src = this.exceptionThrowSource(stackTrace);
@@ -1054,7 +1055,7 @@ class DotnetTrxParser {
             path,
             line,
             message,
-            details: `${message}\n${stackTrace}`
+            details: `${message}`
         };
     }
     exceptionThrowSource(stackTrace) {
@@ -2050,14 +2051,17 @@ function getTestRunsReport(testRuns, options) {
     }
     if (testRuns.length > 0 || options.onlySummary) {
         const tableData = testRuns
-            .filter(tr => tr.passed > 0 || tr.failed > 0 || tr.skipped > 0)
-            .map(tr => {
+            .map((tr, originalIndex) => ({ tr, originalIndex }))
+            .filter(({ tr }) => tr.passed > 0 || tr.failed > 0 || tr.skipped > 0)
+            .map(({ tr, originalIndex }) => {
             const time = (0, markdown_utils_1.formatTime)(tr.time);
             const name = tr.path;
+            const addr = options.baseUrl + makeRunSlug(originalIndex, options).link;
+            const nameLink = (0, markdown_utils_1.link)(name, addr);
             const passed = tr.passed > 0 ? `${tr.passed} ${markdown_utils_1.Icon.success}` : '';
             const failed = tr.failed > 0 ? `${tr.failed} ${markdown_utils_1.Icon.fail}` : '';
             const skipped = tr.skipped > 0 ? `${tr.skipped} ${markdown_utils_1.Icon.skip}` : '';
-            return [name, passed, failed, skipped, time];
+            return [nameLink, passed, failed, skipped, time];
         });
         const resultsTable = (0, markdown_utils_1.table)(['Report', 'Passed', 'Failed', 'Skipped', 'Time'], [markdown_utils_1.Align.Left, markdown_utils_1.Align.Right, markdown_utils_1.Align.Right, markdown_utils_1.Align.Right, markdown_utils_1.Align.Right], ...tableData);
         sections.push(resultsTable);
@@ -2128,6 +2132,9 @@ function getTestsReport(ts, runIndex, suiteIndex, options) {
         }
         const space = grp.name ? '  ' : '';
         for (const tc of grp.tests) {
+            if (options.listTests === 'failed' && tc.result !== 'failed') {
+                continue;
+            }
             const result = getResultIcon(tc.result);
             sections.push(`${space}${result} ${tc.name}`);
             if (tc.error) {
@@ -2452,11 +2459,11 @@ async function downloadArtifact(octokit, artifactId, fileName, token) {
         };
         const downloadStream = got_1.default.stream(req.url, { headers });
         const fileWriterStream = (0, fs_1.createWriteStream)(fileName);
-        downloadStream.on('redirect', response => {
+        downloadStream.on('redirect', (response) => {
             core.info(`Downloading ${response.headers.location}`);
         });
-        downloadStream.on('downloadProgress', ({ transferred }) => {
-            core.info(`Progress: ${transferred} B`);
+        downloadStream.on('downloadProgress', (progress) => {
+            core.info(`Progress: ${progress.transferred} B`);
         });
         await asyncStream(downloadStream, fileWriterStream);
     }

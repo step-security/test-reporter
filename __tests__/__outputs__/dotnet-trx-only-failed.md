@@ -9,7 +9,6 @@
 |[DotnetTests.XUnitTests.CalculatorTests](#user-content-r0s0)|5 ✅|5 ❌|1 ⚪|118ms|
 ### ❌ <a id="user-content-r0s0" href="#user-content-r0s0">DotnetTests.XUnitTests.CalculatorTests</a>
 ```
-✅ Custom Name
 ❌ Exception_In_TargetTest
 	System.DivideByZeroException : Attempted to divide by zero.
 	   at DotnetTests.Unit.Calculator.Div(Int32 a, Int32 b) in C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.Unit\Calculator.cs:line 9
@@ -22,19 +21,14 @@
 	Expected: 3
 	Actual:   2
 	   at DotnetTests.XUnitTests.CalculatorTests.Failing_Test() in C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.XUnitTests\CalculatorTests.cs:line 27
-✅ Is_Even_Number(i: 2)
 ❌ Is_Even_Number(i: 3)
 	Assert.True() Failure
 	Expected: True
 	Actual:   False
 	   at DotnetTests.XUnitTests.CalculatorTests.Is_Even_Number(Int32 i) in C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.XUnitTests\CalculatorTests.cs:line 59
-✅ Passing_Test
-✅ Should be even number(i: 2)
 ❌ Should be even number(i: 3)
 	Assert.True() Failure
 	Expected: True
 	Actual:   False
 	   at DotnetTests.XUnitTests.CalculatorTests.Theory_With_Custom_Name(Int32 i) in C:\Users\Michal\Workspace\dorny\test-reporter\reports\dotnet\DotnetTests.XUnitTests\CalculatorTests.cs:line 67
-⚪ Skipped_Test
-✅ Timeout_Test
 ```

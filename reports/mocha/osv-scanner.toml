@@ -14,3 +14,7 @@ id = "GHSA-qrpm-p2h7-hrv2"
 
 [[IgnoredVulns]]
 id = "GHSA-mwcw-c2x4-8c55"
+
+[[IgnoredVulns]]
+id = "GHSA-v6h2-p8h4-qcjw"
+reason = "It is a test dependency"

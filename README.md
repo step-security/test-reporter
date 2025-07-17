@@ -9,7 +9,7 @@ This [Github Action](https://github.com/features/actions) displays test results 
 ✔️ Provides final `conclusion` and counts of `passed`, `failed` and `skipped` tests as output parameters
 
 **How it looks:**
-|![](assets/fluent-validation-report.png)|![](assets/provider-error-summary.png)|![](assets/provider-error-details.png)|![](assets/mocha-groups.png)|
+|![Summary showing test run with all tests passed, including details such as test file names, number of passed, failed, and skipped tests, and execution times. The interface is dark-themed and displays a green badge indicating 3527 passed and 4 skipped tests.](assets/fluent-validation-report.png)|![Summary showing test run with a failed unit test. The summary uses a dark background and highlights errors in red for quick identification.](assets/provider-error-summary.png)|![GitHub Actions annotation showing details of a failed unit test with a detailed error message, stack trace, and code annotation.](assets/provider-error-details.png)|![Test cases written in Mocha framework with a list of expectations for each test case. The table format and color-coded badges help users quickly assess test suite health.](assets/mocha-groups.png)|
 |:--:|:--:|:--:|:--:|
 
 **Supported languages / frameworks:**
@@ -50,7 +50,7 @@ jobs:
 
       - name: Test Report
         uses: step-security/test-reporter@v2
-        if: success() || failure()    # run this step even if previous step failed
+        if: ${{ !cancelled() }}    # run this step even if previous step failed
         with:
           name: JEST Tests            # Name of the check run which will be created
           path: reports/jest-*.xml    # Path to test results
@@ -79,7 +79,7 @@ jobs:
       - run: npm ci                       # install packages
       - run: npm test                     # run tests (configured to use jest-junit reporter)
       - uses: actions/upload-artifact@v4  # upload test results
-        if: success() || failure()        # run this step even if previous step failed
+        if: ${{ !cancelled() }}        # run this step even if previous step failed
         with:
           name: test-results
           path: jest-junit.xml

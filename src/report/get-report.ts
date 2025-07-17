@@ -159,14 +159,17 @@ function getTestRunsReport(testRuns: TestRunResult[], options: ReportOptions): s
 
   if (testRuns.length > 0 || options.onlySummary) {
     const tableData = testRuns
-      .filter(tr => tr.passed > 0 || tr.failed > 0 || tr.skipped > 0)
-      .map(tr => {
+      .map((tr, originalIndex) => ({tr, originalIndex}))
+      .filter(({tr}) => tr.passed > 0 || tr.failed > 0 || tr.skipped > 0)
+      .map(({tr, originalIndex}) => {
         const time = formatTime(tr.time)
         const name = tr.path
+        const addr = options.baseUrl + makeRunSlug(originalIndex, options).link
+        const nameLink = link(name, addr)
         const passed = tr.passed > 0 ? `${tr.passed} ${Icon.success}` : ''
         const failed = tr.failed > 0 ? `${tr.failed} ${Icon.fail}` : ''
         const skipped = tr.skipped > 0 ? `${tr.skipped} ${Icon.skip}` : ''
-        return [name, passed, failed, skipped, time]
+        return [nameLink, passed, failed, skipped, time]
       })
 
     const resultsTable = table(
@@ -260,6 +263,9 @@ function getTestsReport(ts: TestSuiteResult, runIndex: number, suiteIndex: numbe
     }
     const space = grp.name ? '  ' : ''
     for (const tc of grp.tests) {
+      if (options.listTests === 'failed' && tc.result !== 'failed') {
+        continue
+      }
       const result = getResultIcon(tc.result)
       sections.push(`${space}${result} ${tc.name}`)
       if (tc.error) {

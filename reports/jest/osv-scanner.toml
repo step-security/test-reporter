@@ -60,3 +60,7 @@ id = "GHSA-3h5v-q93c-6h6q"
 [[IgnoredVulns]]
 id = "GHSA-v6h2-p8h4-qcjw"
 reason = "It is a test dependency"
+
+[[IgnoredVulns]]
+id = "GHSA-fjxv-7rqg-78g4"
+reason = "It is a test dependency"

@@ -9,7 +9,7 @@
   "author": "step-security",
   "license": "MIT",
   "devDependencies": {
-    "jest": "^26.5.3",
+    "jest": "^30.1.2",
     "jest-junit": "^12.0.0"
   },
   "jest-junit": {

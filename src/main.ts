@@ -51,6 +51,7 @@ class TestReporter {
   readonly useActionsSummary = core.getInput('use-actions-summary', {required: false}) === 'true'
   readonly badgeTitle = core.getInput('badge-title', {required: false})
   readonly reportTitle = core.getInput('report-title', {required: false})
+  readonly collapsed = core.getInput('collapsed', {required: false}) as 'auto' | 'always' | 'never'
   readonly token = core.getInput('token', {required: true})
   readonly octokit: InstanceType<typeof GitHub>
   readonly context = getCheckRunContext()
@@ -168,7 +169,7 @@ class TestReporter {
       }
     }
 
-    const {listSuites, listTests, onlySummary, useActionsSummary, badgeTitle, reportTitle} = this
+    const {listSuites, listTests, onlySummary, useActionsSummary, badgeTitle, reportTitle, collapsed} = this
 
     const passed = results.reduce((sum, tr) => sum + tr.passed, 0)
     const failed = results.reduce((sum, tr) => sum + tr.failed, 0)
@@ -184,7 +185,8 @@ class TestReporter {
         onlySummary,
         useActionsSummary,
         badgeTitle,
-        reportTitle
+        reportTitle,
+        collapsed
       })
 
       core.info('Summary content:')
@@ -213,7 +215,8 @@ class TestReporter {
         onlySummary,
         useActionsSummary,
         badgeTitle,
-        reportTitle
+        reportTitle,
+        collapsed
       })
 
       core.info('Creating annotations')

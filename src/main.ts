@@ -183,7 +183,6 @@ class TestReporter {
 
     let baseUrl = ''
     if (this.useActionsSummary) {
-      core.info(`Creating action summary`)
       const summary = getReport(
         results,
         {

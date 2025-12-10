@@ -277,6 +277,7 @@ const golang_json_parser_1 = __nccwpck_require__(5162);
 const java_junit_parser_1 = __nccwpck_require__(8342);
 const jest_junit_parser_1 = __nccwpck_require__(1042);
 const mocha_json_parser_1 = __nccwpck_require__(5402);
+const python_xunit_parser_1 = __nccwpck_require__(6578);
 const rspec_json_parser_1 = __nccwpck_require__(9768);
 const swift_xunit_parser_1 = __nccwpck_require__(7330);
 const path_utils_1 = __nccwpck_require__(9132);
@@ -424,10 +425,9 @@ class TestReporter {
                 badgeTitle,
                 reportTitle,
                 collapsed
-            });
+            }, shortSummary);
             core.info('Summary content:');
             core.info(summary);
-            core.summary.addRaw(`# ${shortSummary}`);
             await core.summary.addRaw(summary).write();
         }
         else {
@@ -496,6 +496,8 @@ class TestReporter {
                 return new jest_junit_parser_1.JestJunitParser(options);
             case 'mocha-json':
                 return new mocha_json_parser_1.MochaJsonParser(options);
+            case 'python-xunit':
+                return new python_xunit_parser_1.PythonXunitParser(options);
             case 'rspec-json':
                 return new rspec_json_parser_1.RspecJsonParser(options);
             case 'swift-xunit':
@@ -1683,6 +1685,26 @@ exports.MochaJsonParser = MochaJsonParser;
 
 /***/ }),
 
+/***/ 6578:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.PythonXunitParser = void 0;
+const java_junit_parser_1 = __nccwpck_require__(8342);
+class PythonXunitParser extends java_junit_parser_1.JavaJunitParser {
+    options;
+    constructor(options) {
+        super(options);
+        this.options = options;
+    }
+}
+exports.PythonXunitParser = PythonXunitParser;
+
+
+/***/ }),
+
 /***/ 9768:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
@@ -1951,11 +1973,10 @@ exports.DEFAULT_OPTIONS = {
     reportTitle: '',
     collapsed: 'auto'
 };
-function getReport(results, options = exports.DEFAULT_OPTIONS) {
-    core.info('Generating check run summary');
+function getReport(results, options = exports.DEFAULT_OPTIONS, shortSummary = '') {
     applySort(results);
     const opts = { ...options };
-    let lines = renderReport(results, opts);
+    let lines = renderReport(results, opts, shortSummary);
     let report = lines.join('\n');
     if (getByteLength(report) <= getMaxReportLength(options)) {
         return report;
@@ -1963,7 +1984,7 @@ function getReport(results, options = exports.DEFAULT_OPTIONS) {
     if (opts.listTests === 'all') {
         core.info("Test report summary is too big - setting 'listTests' to 'failed'");
         opts.listTests = 'failed';
-        lines = renderReport(results, opts);
+        lines = renderReport(results, opts, shortSummary);
         report = lines.join('\n');
         if (getByteLength(report) <= getMaxReportLength(options)) {
             return report;
@@ -2010,11 +2031,14 @@ function applySort(results) {
 function getByteLength(text) {
     return Buffer.byteLength(text, 'utf8');
 }
-function renderReport(results, options) {
+function renderReport(results, options, shortSummary) {
     const sections = [];
     const reportTitle = options.reportTitle.trim();
     if (reportTitle) {
         sections.push(`# ${reportTitle}`);
+    }
+    if (shortSummary) {
+        sections.push(`## ${shortSummary}`);
     }
     const badge = getReportBadge(results, options);
     sections.push(badge);

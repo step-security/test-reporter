@@ -16,6 +16,7 @@ export interface ReportOptions {
   useActionsSummary: boolean
   badgeTitle: string
   reportTitle: string
+  collapsed: 'auto' | 'always' | 'never'
 }
 
 export const DEFAULT_OPTIONS: ReportOptions = {
@@ -25,7 +26,8 @@ export const DEFAULT_OPTIONS: ReportOptions = {
   onlySummary: false,
   useActionsSummary: true,
   badgeTitle: 'tests',
-  reportTitle: ''
+  reportTitle: '',
+  collapsed: 'auto'
 }
 
 export function getReport(results: TestRunResult[], options: ReportOptions = DEFAULT_OPTIONS): string {
@@ -125,7 +127,7 @@ function getReportBadge(results: TestRunResult[], options: ReportOptions): strin
   return getBadge(passed, failed, skipped, options)
 }
 
-function getBadge(passed: number, failed: number, skipped: number, options: ReportOptions): string {
+export function getBadge(passed: number, failed: number, skipped: number, options: ReportOptions): string {
   const text = []
   if (passed > 0) {
     text.push(`${passed} passed`)
@@ -145,14 +147,20 @@ function getBadge(passed: number, failed: number, skipped: number, options: Repo
     color = 'yellow'
   }
   const hint = failed > 0 ? 'Tests failed' : 'Tests passed successfully'
-  const uri = encodeURIComponent(`${options.badgeTitle}-${message}-${color}`)
-  return `![${hint}](https://img.shields.io/badge/${uri})`
+  const encodedBadgeTitle = encodeImgShieldsURIComponent(options.badgeTitle)
+  const encodedMessage = encodeImgShieldsURIComponent(message)
+  const encodedColor = encodeImgShieldsURIComponent(color)
+  return `![${hint}](https://img.shields.io/badge/${encodedBadgeTitle}-${encodedMessage}-${encodedColor})`
 }
 
 function getTestRunsReport(testRuns: TestRunResult[], options: ReportOptions): string[] {
   const sections: string[] = []
   const totalFailed = testRuns.reduce((sum, tr) => sum + tr.failed, 0)
-  if (totalFailed === 0) {
+
+  // Determine if report should be collapsed based on collapsed option
+  const shouldCollapse = options.collapsed === 'always' || (options.collapsed === 'auto' && totalFailed === 0)
+
+  if (shouldCollapse) {
     sections.push(`<details><summary>Expand for details</summary>`)
     sections.push(` `)
   }
@@ -185,7 +193,7 @@ function getTestRunsReport(testRuns: TestRunResult[], options: ReportOptions): s
     sections.push(...suitesReports)
   }
 
-  if (totalFailed === 0) {
+  if (shouldCollapse) {
     sections.push(`</details>`)
   }
   return sections
@@ -304,4 +312,8 @@ function getResultIcon(result: TestExecutionResult): string {
     default:
       return ''
   }
+}
+
+function encodeImgShieldsURIComponent(component: string): string {
+  return encodeURIComponent(component).replace(/-/g, '--').replace(/_/g, '__')
 }

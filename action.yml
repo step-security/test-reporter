@@ -1,6 +1,5 @@
 name: Test Reporter
-description: |
-  Shows test results in GitHub UI: .NET (xUnit, NUnit, MSTest), Dart, Flutter, Java (JUnit), JavaScript (JEST, Mocha)
+description: Displays test results from popular testing frameworks directly in GitHub
 author: step-security
 inputs:
   artifact:
@@ -29,9 +28,11 @@ inputs:
         - dotnet-nunit
         - dotnet-trx
         - flutter-json
+        - golang-json
         - java-junit
         - jest-junit
         - mocha-json
+        - python-xunit
         - rspec-json
         - swift-xunit
     required: true

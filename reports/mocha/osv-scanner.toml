@@ -1,24 +1,13 @@
 # They are not part of the build process, dependencies used for testing"
 
 [[IgnoredVulns]]
-id = "GHSA-grv7-fg5c-xmjg" 
+id = "GHSA-73rr-hh4g-fpgx"
+reason = "diff is a test-only dependency (mocha); fix requires major version bump not yet released by upstream"
 
 [[IgnoredVulns]]
-id = "GHSA-ww39-953v-wcq6"
+id = "GHSA-5c6j-r48x-rmvq"
+reason = "serialize-javascript is a test-only dependency (mocha); fix requires major version bump not yet released by upstream"
 
 [[IgnoredVulns]]
-id = "GHSA-f8q6-p94x-37v3"
-
-[[IgnoredVulns]]
-id = "GHSA-qrpm-p2h7-hrv2"
-
-[[IgnoredVulns]]
-id = "GHSA-mwcw-c2x4-8c55"
-
-[[IgnoredVulns]]
-id = "GHSA-v6h2-p8h4-qcjw"
-reason = "It is a test dependency"
-
-[[IgnoredVulns]]
-id = "GHSA-mh29-5h37-fv8m"
-reason = "It is a test dependency"
+id = "GHSA-qj8w-gfj5-8c6v"
+reason = "serialize-javascript is a test-only dependency (mocha); fix requires major version bump not yet released by upstream"

@@ -1,6 +1,6 @@
 {
   "name": "test-reporter",
-  "version": "2.5.0",
+  "version": "3.0.0",
   "private": true,
   "description": "Presents test results from popular testing frameworks as Github check run",
   "type": "module",
@@ -48,13 +48,13 @@
   },
   "devDependencies": {
     "@octokit/webhooks-types": "^7.6.1",
-    "@types/adm-zip": "^0.5.7",
+    "@types/adm-zip": "^0.5.8",
     "@types/jest": "^30.0.0",
-    "@types/node": "^20.19.23",
+    "@types/node": "^24.12.0",
     "@types/picomatch": "^4.0.2",
     "@types/xml2js": "^0.4.14",
     "@typescript-eslint/eslint-plugin": "^8.56.1",
-    "@typescript-eslint/parser": "^8.56.1",
+    "@typescript-eslint/parser": "^8.57.1",
     "@vercel/ncc": "^0.38.4",
     "eol-converter-cli": "^1.1.0",
     "eslint": "^9.39.3",
@@ -81,7 +81,7 @@
     "titleTemplate": "{title}"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "markdownlint-cli2": {
     "ignores": [

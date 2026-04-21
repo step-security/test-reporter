@@ -1,8 +1,8 @@
-import {ParseOptions, TestParser} from '../../test-parser'
+import {ParseOptions, TestParser} from '../../test-parser.js'
 import {parseStringPromise} from 'xml2js'
 
-import {PhpunitReport, SingleSuiteReport, TestCase, TestSuite} from './phpunit-junit-types'
-import {getBasePath, normalizeFilePath} from '../../utils/path-utils'
+import {PhpunitReport, SingleSuiteReport, TestCase, TestSuite} from './phpunit-junit-types.js'
+import {getBasePath, normalizeFilePath} from '../../utils/path-utils.js'
 
 import {
   TestExecutionResult,
@@ -11,7 +11,7 @@ import {
   TestGroupResult,
   TestCaseResult,
   TestCaseError
-} from '../../test-results'
+} from '../../test-results.js'
 
 export class PhpunitJunitParser implements TestParser {
   readonly trackedFiles: Set<string>
@@ -130,7 +130,7 @@ export class PhpunitJunitParser implements TestParser {
     }
 
     const failure = failures[0]
-    const details = typeof failure === 'string' ? failure : failure._ ?? ''
+    const details = typeof failure === 'string' ? failure : (failure._ ?? '')
 
     // PHPUnit provides file path directly in testcase attributes
     let filePath: string | undefined

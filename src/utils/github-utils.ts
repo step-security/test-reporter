@@ -1,13 +1,10 @@
 import {createWriteStream} from 'fs'
+import {pipeline} from 'stream/promises'
+import {Readable, Transform} from 'stream'
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import {GitHub} from '@actions/github/lib/utils'
 import type {PullRequest, WorkflowRunEvent} from '@octokit/webhooks-types'
-import {IncomingMessage} from 'http'
-import * as stream from 'stream'
-import {promisify} from 'util'
-import got, {Progress} from 'got'
-const asyncStream = promisify(stream.pipeline)
 
 export function getCheckRunContext(): {sha: string; runId: number} {
   if (github.context.eventName === 'workflow_run') {
@@ -16,8 +13,18 @@ export function getCheckRunContext(): {sha: string; runId: number} {
     if (!event.workflow_run) {
       throw new Error("Event of type 'workflow_run' is missing 'workflow_run' field")
     }
+    const prs = event.workflow_run.pull_requests ?? []
+    // For `workflow_run`, we want to report against the PR commit when possible so annotations land
+    // on the contributor's changes. Prefer the PR whose `head.ref` matches `workflow_run.head_branch`,
+    // then fall back to the first PR head SHA, and finally to `workflow_run.head_sha` for non-PR runs.
+    const prShaMatch = prs.find(pr => pr.head?.ref === event.workflow_run.head_branch)?.head?.sha
+    const prShaFirst = prs[0]?.head?.sha
+    const sha = prShaMatch ?? prShaFirst ?? event.workflow_run.head_sha
+    if (!sha) {
+      throw new Error('Unable to resolve SHA from workflow_run (no PR head.sha or head_sha)')
+    }
     return {
-      sha: event.workflow_run.head_commit.id,
+      sha,
       runId: event.workflow_run.id
     }
   }
@@ -48,21 +55,33 @@ export async function downloadArtifact(
       archive_format: 'zip'
     })
 
-    const headers = {
-      Authorization: `Bearer ${token}`
+    const response = await fetch(req.url, {
+      headers: {Authorization: `Bearer ${token}`},
+      redirect: 'follow'
+    })
+
+    if (!response.ok) {
+      throw new Error(`Download failed: ${response.status} ${response.statusText}`)
+    }
+    if (!response.body) {
+      throw new Error('Response body is empty')
     }
 
-    const downloadStream = got.stream(req.url, {headers})
+    core.info(`Downloading from ${response.url}`)
+
+    const readable = Readable.fromWeb(response.body)
     const fileWriterStream = createWriteStream(fileName)
 
-    downloadStream.on('redirect', (response: IncomingMessage) => {
-      core.info(`Downloading ${response.headers.location}`)
-    })
-    downloadStream.on('downloadProgress', (progress: Progress) => {
-      core.info(`Progress: ${progress.transferred} B`)
+    let transferred = 0
+    const progress = new Transform({
+      transform(chunk, _encoding, callback) {
+        transferred += chunk.length
+        core.info(`Progress: ${transferred} B`)
+        callback(null, chunk)
+      }
     })
 
-    await asyncStream(downloadStream, fileWriterStream)
+    await pipeline(readable, progress, fileWriterStream)
   } finally {
     core.endGroup()
   }
@@ -106,7 +125,11 @@ async function listGitTree(octokit: InstanceType<typeof GitHub>, sha: string, pa
     if (tr.type === 'blob') {
       result.push(file)
     } else if (tr.type === 'tree' && truncated) {
-      const files = await listGitTree(octokit, tr.sha as string, `${file}/`)
+      if (!tr.sha) {
+        core.warning(`Skipping tree ${file}: missing SHA`)
+        continue
+      }
+      const files = await listGitTree(octokit, tr.sha, `${file}/`)
       result.push(...files)
     }
   }

@@ -1,9 +1,9 @@
 import * as path from 'path'
-import {ParseOptions, TestParser} from '../../test-parser'
+import {ParseOptions, TestParser} from '../../test-parser.js'
 import {parseStringPromise} from 'xml2js'
 
-import {NetteTesterReport, SingleSuiteReport, TestCase, TestSuite} from './tester-junit-types'
-import {normalizeFilePath} from '../../utils/path-utils'
+import {NetteTesterReport, SingleSuiteReport, TestCase, TestSuite} from './tester-junit-types.js'
+import {normalizeFilePath} from '../../utils/path-utils.js'
 
 import {
   TestExecutionResult,
@@ -12,7 +12,7 @@ import {
   TestGroupResult,
   TestCaseResult,
   TestCaseError
-} from '../../test-results'
+} from '../../test-results.js'
 
 interface ParsedTestName {
   filePath: string
@@ -199,7 +199,7 @@ export class NetteTesterJunitParser implements TestParser {
 
     const failure = failures[0]
     // For Nette Tester, details are in the message attribute, not as inner text
-    const details = typeof failure === 'string' ? failure : failure._ ?? failure.$?.message ?? ''
+    const details = typeof failure === 'string' ? failure : (failure._ ?? failure.$?.message ?? '')
 
     // Try to extract file path and line from error details
     let errorFilePath: string | undefined

@@ -1,10 +1,10 @@
 import {parseStringPromise} from 'xml2js'
 
-import {ErrorInfo, Outcome, TrxReport, UnitTest, UnitTestResult} from './dotnet-trx-types'
-import {ParseOptions, TestParser} from '../../test-parser'
+import {ErrorInfo, Outcome, TrxReport, UnitTest, UnitTestResult} from './dotnet-trx-types.js'
+import {ParseOptions, TestParser} from '../../test-parser.js'
 
-import {getBasePath, normalizeFilePath} from '../../utils/path-utils'
-import {parseIsoDate, parseNetDuration} from '../../utils/parse-utils'
+import {getBasePath, normalizeFilePath} from '../../utils/path-utils.js'
+import {parseIsoDate, parseNetDuration} from '../../utils/parse-utils.js'
 
 import {
   TestExecutionResult,
@@ -13,7 +13,7 @@ import {
   TestGroupResult,
   TestCaseResult,
   TestCaseError
-} from '../../test-results'
+} from '../../test-results.js'
 
 class TestClass {
   constructor(readonly name: string) {}
@@ -62,8 +62,11 @@ export class DotnetTrxParser implements TestParser {
   }
 
   private getTestClasses(trx: TrxReport): TestClass[] {
-    if (trx.TestRun.TestDefinitions === undefined || trx.TestRun.Results === undefined ||
-        !trx.TestRun.TestDefinitions.some(td => td.UnitTest && Array.isArray(td.UnitTest))) {
+    if (
+      trx.TestRun.TestDefinitions === undefined ||
+      trx.TestRun.Results === undefined ||
+      !trx.TestRun.TestDefinitions.some(td => td.UnitTest && Array.isArray(td.UnitTest))
+    ) {
       return []
     }
 
@@ -81,7 +84,7 @@ export class DotnetTrxParser implements TestParser {
 
     const testClasses: {[name: string]: TestClass} = {}
     for (const r of unitTestsResults) {
-      const className = r.test.TestMethod[0].$.className ?? "Unclassified"
+      const className = r.test.TestMethod[0].$.className ?? 'Unclassified'
       let tc = testClasses[className]
       if (tc === undefined) {
         tc = new TestClass(className)

@@ -53712,6 +53712,8 @@ __nccwpck_require__.d(common_utils_namespaceObject, {
   origin: () => (origin)
 });
 
+// EXTERNAL MODULE: external "fs"
+var external_fs_ = __nccwpck_require__(9896);
 // EXTERNAL MODULE: external "os"
 var external_os_ = __nccwpck_require__(857);
 ;// CONCATENATED MODULE: ./node_modules/@actions/core/lib/utils.js
@@ -53844,8 +53846,6 @@ function escapeProperty(s) {
 //# sourceMappingURL=command.js.map
 // EXTERNAL MODULE: external "crypto"
 var external_crypto_ = __nccwpck_require__(6982);
-// EXTERNAL MODULE: external "fs"
-var external_fs_ = __nccwpck_require__(9896);
 ;// CONCATENATED MODULE: ./node_modules/@actions/core/lib/file-command.js
 // For internal use, subject to change.
 // We use any as a valid input type
@@ -69882,6 +69882,7 @@ const {
 
 
 
+
 async function main() {
     try {
         const testReporter = new TestReporter();
@@ -70116,18 +70117,38 @@ class TestReporter {
 }
 main();
 async function validateSubscription() {
-    const API_URL = `https://agent.api.stepsecurity.io/v1/github/${process.env.GITHUB_REPOSITORY}/actions/subscription`;
+    const eventPath = process.env.GITHUB_EVENT_PATH;
+    let repoPrivate;
+    if (eventPath && external_fs_.existsSync(eventPath)) {
+        const eventData = JSON.parse(external_fs_.readFileSync(eventPath, 'utf8'));
+        repoPrivate = eventData?.repository?.private;
+    }
+    const upstream = 'dorny/test-reporter';
+    const action = process.env.GITHUB_ACTION_REPOSITORY;
+    const docsUrl = 'https://docs.stepsecurity.io/actions/stepsecurity-maintained-actions';
+    info('');
+    info('\u001b[1;36mStepSecurity Maintained Action\u001b[0m');
+    info(`Secure drop-in replacement for ${upstream}`);
+    if (repoPrivate === false)
+        info('\u001b[32m\u2713 Free for public repositories\u001b[0m');
+    info(`\u001b[36mLearn more:\u001b[0m ${docsUrl}`);
+    info('');
+    if (repoPrivate === false)
+        return;
+    const serverUrl = process.env.GITHUB_SERVER_URL || 'https://github.com';
+    const body = { action: action || '' };
+    if (serverUrl !== 'https://github.com')
+        body.ghes_server = serverUrl;
     try {
-        await lib_axios.get(API_URL, { timeout: 3000 });
+        await lib_axios.post(`https://agent.api.stepsecurity.io/v1/github/${process.env.GITHUB_REPOSITORY}/actions/maintained-actions-subscription`, body, { timeout: 3000 });
     }
     catch (error) {
         if (axios_isAxiosError(error) && error.response?.status === 403) {
-            core_error('Subscription is not valid. Reach out to support@stepsecurity.io');
+            core_error(`\u001b[1;31mThis action requires a StepSecurity subscription for private repositories.\u001b[0m`);
+            core_error(`\u001b[31mLearn how to enable a subscription: ${docsUrl}\u001b[0m`);
             process.exit(1);
         }
-        else {
-            info('Timeout or API not reachable. Continuing to next step.');
-        }
+        info('Timeout or API not reachable. Continuing to next step.');
     }
 }
 

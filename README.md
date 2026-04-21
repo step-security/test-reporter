@@ -194,6 +194,13 @@ jobs:
     # Set this action as failed if no test results were found
     fail-on-empty: 'true'
 
+    # Controls whether test report details are collapsed or expanded.
+    # Supported options:
+    #   auto: Collapse only if all tests pass (default behavior)
+    #   always: Always collapse the report details
+    #   never: Always expand the report details
+    collapsed: 'auto'
+
     # Relative path under $GITHUB_WORKSPACE where the repository was checked out.
     working-directory: ''
 
@@ -212,6 +219,7 @@ jobs:
 | time       | Test execution time [ms] |
 | url        | Check run URL            |
 | url_html   | Check run URL HTML       |
+| slug_prefix| Random anchor links slug prefix generated for the summary headers |
 
 ## Supported formats
 

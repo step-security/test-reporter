@@ -22,3 +22,19 @@ reason = "It is a test dependency"
 [[IgnoredVulns]]
 id = "GHSA-mh29-5h37-fv8m"
 reason = "It is a test dependency"
+
+[[IgnoredVulns]]
+id = "GHSA-f886-m6hf-6m8v"
+reason = "It is a test dependency"
+
+[[IgnoredVulns]]
+id = "GHSA-qj8w-gfj5-8c6v"
+reason = "It is a test dependency"
+
+[[IgnoredVulns]]
+id = "GHSA-73rr-hh4g-fpgx"
+reason = "It is a test dependency"
+
+[[IgnoredVulns]]
+id = "GHSA-5c6j-r48x-rmvq"
+reason = "It is a test dependency"

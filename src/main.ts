@@ -51,6 +51,7 @@ class TestReporter {
   readonly workDirInput = core.getInput('working-directory', {required: false})
   readonly onlySummary = core.getInput('only-summary', {required: false}) === 'true'
   readonly useActionsSummary = core.getInput('use-actions-summary', {required: false}) === 'true'
+  readonly slugPrefix = core.getInput('slug-prefix', {required: false})
   readonly badgeTitle = core.getInput('badge-title', {required: false})
   readonly reportTitle = core.getInput('report-title', {required: false})
   readonly collapsed = core.getInput('collapsed', {required: false}) as 'auto' | 'always' | 'never'
@@ -176,7 +177,7 @@ class TestReporter {
       }
     }
 
-    const {listSuites, listTests, onlySummary, useActionsSummary, badgeTitle, reportTitle, collapsed} = this
+    const {listSuites, listTests, slugPrefix, onlySummary, useActionsSummary, badgeTitle, reportTitle, collapsed} = this
 
     const passed = results.reduce((sum, tr) => sum + tr.passed, 0)
     const failed = results.reduce((sum, tr) => sum + tr.failed, 0)
@@ -190,6 +191,7 @@ class TestReporter {
         {
           listSuites,
           listTests,
+          slugPrefix,
           baseUrl,
           onlySummary,
           useActionsSummary,
@@ -221,6 +223,7 @@ class TestReporter {
       const summary = getReport(results, {
         listSuites,
         listTests,
+        slugPrefix,
         baseUrl,
         onlySummary,
         useActionsSummary,
